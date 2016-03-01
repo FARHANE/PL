@@ -78,17 +78,7 @@
                                                                     <div id="isAnonymLabel">
                                                                         <span class="label label-success" style="font-size:1.2em;">Yes</span>
                                                                     </div>
-                                                                    <div class="radio hidden" style="text-align:center;" >
-                                                                        <label class="radio-inline">
-                                                                            <g:radio  style="float:none" name="anonym" value="true" checked="true" />&nbsp;
-                                                                            Yes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                                        </label>
-                                                                        
-                                                                        <label class="radio-inline">
-                                                                            <g:radio  style="float:none" name="anonym" value="false"  /> No
-                                                                        </label>
-                                                                        
-                                                                    </div>
+                                                                    
                                                                     </g:else>
                                                                 </div>
                                                                     <img src="/assets/anonym.png" alt="" class="img-responsive"/>
@@ -125,7 +115,7 @@
                                                                             <td>Anonym</td>
                                                                         </g:if>
                                                                         <g:else>
-                                                                        <td>${idea.author}</td>
+                                                                        <td>${idea.author.username}</td>
 
                                                                         </g:else>
                                                                         <td>${idea.data}</td>
@@ -179,19 +169,14 @@
                 
                 var socket = new SockJS("${createLink(uri: '/stomp')}");
                 var client = Stomp.over(socket);
-                var ideaId = null;
+                var anonymat = "true";
                 client.connect({}, function() {
                     client.subscribe("/user/queue/addIdea", function(message) {
                         var idea = JSON.parse(JSON.parse(message.body));
                         var ideaData = idea.message;
                         var created = idea.created;
-                        var author = null;
-                        if(idea.author == null){
-                         author = "Anonym";
-                        }
-                        else{
-                            author =idea.author;
-                        }
+                        var author = idea.author;
+                      
                         var ideaHtml = "<tr><td>"+author+"</td><td>"+ideaData+"</td><td><span class='label label-sm label-success'>"+created+"</span></td></tr>";
 
                         $("#listIdeas").append(ideaHtml);
@@ -202,37 +187,39 @@
                     });
                     client.subscribe("/user/queue/setAnonym", function(message) {
                         var isAnonym = JSON.parse(JSON.parse(message.body));
-
-                        if(isAnonym.anonym == "true"){
-                            $('#isAnonymLabel').html("<span class='label label-success' style='font-size:1.2em;''>Yes</span>");
-                            
-                        }
+                        if( "${isFacilitator}" != true){
+                            if(isAnonym.anonym == "true"){
+                                $('#isAnonymLabel').html("<span class='label label-success' style='font-size:1.2em;''>Yes</span>");
+                                
+                            }
                         else{
                             $('#isAnonymLabel').html("<span class='label label-danger' style='font-size:1.2em;''>No</span>");
                         } 
 
-                         $('input[name="anonym"]').val(isAnonym.anonym);
+                       
+                        }
+                         anonymat = isAnonym.anonym;
+                        
+                         
                     });
 
                 });
                 
                 $("#addIdeaBtn").click(function() {
                     var ideaText = $('#idea').val();
-                    var anonym = $('input[name="anonym"]:checked').val();
                     var brainstormingId="${brainstorm.id}";
                     
                     var idea = {
                             "brainstormingId" : brainstormingId,
                             "ideaText" : ideaText,
-                            "anonym" : anonym
-                        }
+                            "anonym" : anonymat
+                        };
                     $.ajax({
                         type: "POST",
                         url: "/Brainstorming/saveIdea",
                         data: { idea: JSON.stringify(idea)} ,
                         success : function(data){
-                            ideaId = data;
-                        client.send("/app/addIdea", {}, JSON.stringify(ideaId));
+                        client.send("/app/addIdea", {}, JSON.stringify(data));
                         }                     
                     }); 
                     
@@ -243,8 +230,9 @@
                     client.send("/app/nextStep", {}, JSON.stringify(href));
                 });
                 $('input[name="anonym"]').change(function(){
-                    //alert($('input[name="anonym"]:checked').val());
-                    client.send("/app/setAnonym", {}, JSON.stringify("${brainstorm.id}:"+$('input[name="anonym"]:checked').val()));
+                    anonymat=$(this).val();
+                    
+                    client.send("/app/setAnonym", {}, JSON.stringify("${brainstorm.id}:"+anonymat));
                 });
             });
         

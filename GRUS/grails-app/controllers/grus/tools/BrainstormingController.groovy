@@ -34,7 +34,9 @@ class BrainstormingController {
         if(request.method == 'POST'){
 
                 def ideaJson = new JsonSlurper().parseText(request.getParameter("idea"))
+               
                 def brainstorm = Brainstorming.findById(ideaJson.brainstormingId)
+
                 def idea = null
                 if(ideaJson.anonym == "true"){
 
@@ -42,13 +44,16 @@ class BrainstormingController {
                 }
                 else{
                 	def auth = SecurityContextHolder.getContext().getAuthentication()
-
-                    idea = new BrainstormingData(data : ideaJson.ideaText,brainstorming:brainstorm,author : (int)auth.getPrincipal().getId()).save(flush : true)
+                	def user = User.findById(auth.getPrincipal().getId())
+                    idea = new BrainstormingData(data : ideaJson.ideaText,brainstorming:brainstorm,author : user).save(flush : true)
+                 
                 }
 
+              brainstorm.addToIdeas(idea)
+              brainstorm.save(flush:true)
               
-              brainstorm.addToIdeas(idea).save(flush:true)
-              render idea.id
+		      render idea.id
+
               
         }     
         
@@ -57,28 +62,38 @@ class BrainstormingController {
     protected String addIdea(String ideaId, Principal principal) {
 
     	Brainstorming.withTransaction{ status ->
-	        def idea = BrainstormingData.findById(ideaId)      
-	    	def builder = new JsonBuilder()
-	        builder {
-	            message(idea.data)
-	            created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
-	            author(idea.author)
+    	        def idea = BrainstormingData.findById(ideaId)     
+    	    	def builder = new JsonBuilder()
+                if(idea.author){
+                      builder {
+                        message(idea.data)
+                        created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
+                        author(idea.author.username)
 
-	        }
+                    }  
+                    }
+                    else{
+                            builder {
+                                message(idea.data)
+                                created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
+                                author("Anonym")
+                            }  
+                    }
+    	        
 
-	        def brainstorming = idea.brainstorming
-        	def phase = brainstorming.phase
-        	def process = phase.process
-        	def meeting = process.meeting
-        	brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/addIdea",builder.toString())
-        	for (user in meeting.participants){
-        		brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/addIdea",builder.toString())
-        	}
+    	        def brainstorming = idea.brainstorming
+            	def phase = brainstorming.phase
+            	def process = phase.process
+            	def meeting = process.meeting
+            	brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/addIdea",builder.toString())
+            	for (user in meeting.participants){
+            		brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/addIdea",builder.toString())
+            	}
 
 	    	} 
     }
     @MessageMapping("/nextStep")
-    protected String nextStep(String brainstormingId) {
+    protected String nextStep(String brainstormingId, Principal principal) {
     	Brainstorming.withTransaction{ status ->
     		def brainstorming = Brainstorming.findById(brainstormingId)
     		def phase = brainstorming.phase
@@ -101,12 +116,11 @@ class BrainstormingController {
         
     }
     @MessageMapping("/setAnonym")
-    protected String setAnonym(String brainstormingAnonym) {
+    protected String setAnonym(String brainstormingAnonym, Principal principal) {
        Brainstorming.withTransaction{ status ->
+
        		def brainstormingId = brainstormingAnonym.substring(0,brainstormingAnonym.indexOf(':'))
        		def anonymBoolean = brainstormingAnonym.substring(brainstormingAnonym.indexOf(':')+1)
-       		println "*****************************************************"
-       		
        		def brainstorming = Brainstorming.findById(brainstormingId)
     		def phase = brainstorming.phase
         	def process = phase.process
