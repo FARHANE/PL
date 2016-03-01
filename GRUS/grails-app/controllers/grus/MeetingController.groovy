@@ -21,7 +21,7 @@ class MeetingController {
                 
                 def phase = new Phase(phaseName:it.modelPhaseName,process : process)
                 phase.save(flush : true)
-                
+                def previousTool = null
 
                 it.toolsName.each{
                     def  dc = grailsApplication.getDomainClass( 'grus.tools.'+it.toolModelName )
@@ -72,7 +72,7 @@ class MeetingController {
                 facilitator.addToMeetingsFacilitated(meeting)
                 facilitator.save(flush:true)
             }
-            /
+            
             
             flash.messageTitle ="Meeting created with success"
             flash.message = 'Your meeting ('+meeting.topic+') is created ! '

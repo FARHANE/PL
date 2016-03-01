@@ -64,7 +64,7 @@
                                                                     <g:if test="${isFacilitator == true}"> 
                                                                         <div class="radio " style="text-align:center;" >
                                                                         <label class="radio-inline">
-                                                                            <g:radio  style="float:none" name="anonym" value="true" checked="true" />&nbsp;
+                                                                            <g:radio  style="float:none" name="anonym" value="true" />&nbsp;
                                                                             Yes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                         </label>
                                                                         
@@ -80,7 +80,7 @@
                                                                     </div>
                                                                     <div class="radio hidden" style="text-align:center;" >
                                                                         <label class="radio-inline">
-                                                                            <g:radio  style="float:none" name="anonym" value="true" checked="true" />&nbsp;
+                                                                            <g:radio  style="float:none" name="anonym" value="true" />&nbsp;
                                                                             Yes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                         </label>
                                                                         
@@ -181,7 +181,7 @@
                 var client = Stomp.over(socket);
                 var ideaId = null;
                 client.connect({}, function() {
-                    client.subscribe("/topic/addIdea", function(message) {
+                    client.subscribe("/user/queue/addIdea", function(message) {
                         var idea = JSON.parse(JSON.parse(message.body));
                         var ideaData = idea.message;
                         var created = idea.created;
@@ -196,21 +196,26 @@
 
                         $("#listIdeas").append(ideaHtml);
                     });
-                    client.subscribe("/topic/nextStep", function(message) {
+                    client.subscribe("/user/queue/nextStep", function(message) {
                         var href = JSON.parse(JSON.parse(message.body));
                         $(location).attr('href', href.location);
                     });
-                    client.subscribe("/topic/setAnonym", function(message) {
+                    client.subscribe("/user/queue/setAnonym", function(message) {
                         var isAnonym = JSON.parse(JSON.parse(message.body));
-                        if(isAnonym.anonym == "true"){
+                        if( ! "${isFacilitator}"){
+                            if(isAnonym.anonym == "true"){
                             $('#isAnonymLabel').html("<span class='label label-success' style='font-size:1.2em;''>Yes</span>");
                             
                         }
                         else{
                             $('#isAnonymLabel').html("<span class='label label-danger' style='font-size:1.2em;''>No</span>");
                         } 
+                        
+                         $('input[name="anonym"]').val(isAnonym.anonym);
+                         alert($('input[name="anonym"]').val());
+                        }
+                        
 
-                            $('input[name="anonym"]').val(isAnonym.anonym);
                     });
 
                 });
@@ -238,12 +243,12 @@
                 });
                 $('#nextStep').click(function(){
 
-                    var href = "${createLink(controller:brainstorm.nextToolType?brainstorm.nextToolType: 'meeting', action:'index',id:brainstorm.nextTool?brainstorm.nextTool.toolName : 'closeMeeting')}";
+                    var href = "${brainstorm.id}";
                     client.send("/app/nextStep", {}, JSON.stringify(href));
                 });
                 $('input[name="anonym"]').change(function(){
                     //alert($('input[name="anonym"]:checked').val());
-                    client.send("/app/setAnonym", {}, JSON.stringify($('input[name="anonym"]:checked').val()));
+                    client.send("/app/setAnonym", {}, JSON.stringify("${brainstorm.id}:"+$('input[name="anonym"]:checked').val()));
                 });
             });
         
