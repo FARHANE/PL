@@ -9,15 +9,11 @@ class MeetingController {
         if(request.method == 'POST'){
            
             def facilitator = User.findById(params.facilitator)
-            // create de process from the processModel
-            // get the modelProcess
             def processModel = ProcessModel.findById(params.processModel)
             def process = new Process(modelProcess : processModel)
             process.save(flush : true)
 
-            def phaseNumber = 0
-            def itemsPhases = [:]
-            // for each modelPhase in modelProcess
+            
             
             processModel.phasesOfModel.each{
                 // create phase with the same name of model
@@ -25,8 +21,7 @@ class MeetingController {
                 
                 def phase = new Phase(phaseName:it.modelPhaseName,process : process)
                 phase.save(flush : true)
-                def tools = [:]
-                def previousTool =  null
+                
 
                 it.toolsName.each{
                     def  dc = grailsApplication.getDomainClass( 'grus.tools.'+it.toolModelName )
@@ -37,39 +32,25 @@ class MeetingController {
                     else{
                         toolObject = dc.clazz.newInstance(toolName : it.toolModelName,phase :phase)
                     }
-                    //save the created tool
                     toolObject.save(flush : true, failOnError : true)
-                    //def item = [toolObject.id.toString() : tool]
                     if(previousTool != null){
                         previousTool.nextToolType = it.toolModelName
                         previousTool.nextTool = toolObject
                         previousTool.save(flush:true)
                     }
                     previousTool = toolObject
-                    //tools.put(toolObject.id.toString(),tool)
                     phase.addToTools(toolObject)
                 }
-                //phase.tools=tools
                 phase.currentTool = phase.tools.asList().first()
-                /*tools.each{k,v -> 
-                    if(phase.currentTool == null){
-                    phase.currentTool = UUID.fromString(k)
-                        
-                    }
-                    
-                }*/
+                
                 phase.save(flush:true)
-                phaseNumber++
-                itemsPhases.put(phaseNumber.toString(),phase.id.toString())
+               
                 process.addToPhases(phase)
                 
 
             }
-            //process.phases= itemsPhases
             process.currentPhase = process.phases.asList().first()
-            /*if(itemsPhases['1']){
-                process.currentPhase = UUID.fromString(itemsPhases['1'])
-            }*/
+            
             process.save(flush:true)
             
 
@@ -77,7 +58,6 @@ class MeetingController {
             
            
             if(params.typeOfMeeting == "private"){
-                //meeting.participants = params.participants
                 for(userId in params.participants){
                 	def user = User.findById(userId)
                 	meeting.addToParticipants(user)
@@ -85,17 +65,14 @@ class MeetingController {
                 meeting.save(flush:true)
                 facilitator.addToMeetingsFacilitated(meeting)
                 facilitator.save(flush:true)
-              /* for(userId in meeting.participants){
-                    User.findById(userId).appendToMeetingsParticipatedIn(meeting.id.toString()).save(flush:true)
-                } */
+             
             }
             else{
                 meeting.save(flush:true)
                 facilitator.addToMeetingsFacilitated(meeting)
                 facilitator.save(flush:true)
             }
-            //process.meeting = meeting.id
-            //process.save(flush:true)
+            /
             
             flash.messageTitle ="Meeting created with success"
             flash.message = 'Your meeting ('+meeting.topic+') is created ! '
@@ -136,13 +113,7 @@ class MeetingController {
     }
     def show(){
         def meeting = Meeting.findById(params.id)
-        
-        
-        def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()// Meeting.countByFacilitator(meeting.facilitator)
-        /*def participants =null
-        if(meeting.participants){
-            participants=User.findAllByIdInList(meeting.participants)
-        }*/
+        def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()
         def process = meeting.process
         def modelProcess = process.modelProcess
         def phases= modelProcess.phasesOfModel

@@ -4,7 +4,10 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.Authentication
 import grus.ToolController
 import grus.User
+import grus.tools.data.BrainstormingData
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 class BrainstormingController {
 
@@ -19,9 +22,33 @@ class BrainstormingController {
         def meeting = ToolController.getMeetingFromPhase(brainstorm.phase)
         
         def auth = SecurityContextHolder.getContext().getAuthentication()
-       	//def user = auth.getPrincipal()//User.findByUsername(auth.getName())
         def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
         
         [brainstorm:brainstorm,ideas:ideas,isFacilitator:isFacilitator]
+    }
+    def saveIdea(){
+        if(request.method == 'POST'){
+                def ideaJson = new JsonSlurper().parseText(request.getParameter("idea"))
+                println "*****************************"
+                println ideaJson
+                def idea = null
+                if(ideaJson.anonym == "true"){
+
+                    idea = new BrainstormingData(data : ideaJson.ideaText).save(flush : true)
+                }
+                else{
+                	def auth = SecurityContextHolder.getContext().getAuthentication()
+
+                    idea = new BrainstormingData(data : ideaJson.ideaText,author : (int)auth.getPrincipal().getId()).save(flush : true)
+                }
+
+              def brainstorm = Brainstorming.findById(ideaJson.brainstormingId)
+              brainstorm.addToIdeas(idea).save(flush:true)
+              render idea.id
+              
+        }
+
+            
+        
     }
 }

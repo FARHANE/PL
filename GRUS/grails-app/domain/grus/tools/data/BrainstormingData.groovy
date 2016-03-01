@@ -7,5 +7,6 @@ class BrainstormingData {
 	Date created = new Date()
 
     static constraints = {
+    	author nullable : true
     }
 }

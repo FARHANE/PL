@@ -237,7 +237,8 @@
                     
                 });
                 $('#nextStep').click(function(){
-                    var href = "${createLink(controller:brainstorm.nextToolType, action:'index',id:brainstorm.nextToolUUID)}";
+
+                    var href = "${createLink(controller:brainstorm.nextToolType?brainstorm.nextToolType: 'meeting', action:'index',id:brainstorm.nextTool?brainstorm.nextTool.toolName : 'closeMeeting')}";
                     client.send("/app/nextStep", {}, JSON.stringify(href));
                 });
                 $('input[name="anonym"]').change(function(){
