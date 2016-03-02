@@ -12,7 +12,7 @@ class Meeting {
 	static belongsTo = User
 	//static hasOne = [facilitator : User]
 	static hasMany = [participants : User]
-	
+	String anonymat = "true"
 	//UUID createdBy
 	String state = "coming"
 	/* 

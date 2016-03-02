@@ -7,7 +7,7 @@ class Tool {
 	String nextToolType
 	Tool nextTool	
 	String previousToolType
-	Tool previousToolUUID
+	Tool previousTool
     static constraints = {
 		toolName nullable: false,blank:false
 		nextToolUUID nullable:true

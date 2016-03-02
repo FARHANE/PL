@@ -21,8 +21,8 @@ class BrainstormingController {
             to Brainstorming controller so we can get the phase the process and the meeting ;)
         */
         def brainstorm = Brainstorming.findById(params.id)
-        def ideas = brainstorm.ideas
-
+        def ideas = brainstorm.data
+        
         def meeting = ToolController.getMeetingFromPhase(brainstorm.phase)
         
         def auth = SecurityContextHolder.getContext().getAuthentication()
@@ -40,16 +40,16 @@ class BrainstormingController {
                 def idea = null
                 if(ideaJson.anonym == "true"){
 
-                    idea = new BrainstormingData(data : ideaJson.ideaText,brainstorming:brainstorm).save(flush : true)
+                    idea = new BrainstormingData(field : ideaJson.ideaText,brainstorming:brainstorm).save(flush : true)
                 }
                 else{
                 	def auth = SecurityContextHolder.getContext().getAuthentication()
                 	def user = User.findById(auth.getPrincipal().getId())
-                    idea = new BrainstormingData(data : ideaJson.ideaText,brainstorming:brainstorm,author : user).save(flush : true)
+                    idea = new BrainstormingData(field : ideaJson.ideaText,brainstorming:brainstorm,author : user).save(flush : true)
                  
                 }
 
-              brainstorm.addToIdeas(idea)
+              brainstorm.addToData(idea)
               brainstorm.save(flush:true)
               
 		      render idea.id
@@ -66,7 +66,7 @@ class BrainstormingController {
     	    	def builder = new JsonBuilder()
                 if(idea.author){
                       builder {
-                        message(idea.data)
+                        message(idea.field)
                         created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
                         author(idea.author.username)
 
@@ -74,7 +74,7 @@ class BrainstormingController {
                     }
                     else{
                             builder {
-                                message(idea.data)
+                                message(idea.field)
                                 created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
                                 author("Anonym")
                             }  

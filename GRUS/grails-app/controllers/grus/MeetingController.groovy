@@ -54,7 +54,7 @@ class MeetingController {
             process.save(flush:true)
             
 
-            def meeting = new Meeting(topic : params.topic,description:params.description,startDate:params.startDate,endDate:params.endDate,typeOfMeeting:params.typeOfMeeting,facilitator:facilitator.id,process:process)
+            def meeting = new Meeting(topic : params.topic,description:params.description,startDate:params.startDate,endDate:params.endDate,typeOfMeeting:params.typeOfMeeting,anonymat : params.anonymat,facilitator:facilitator.id,process:process)
             
            
             if(params.typeOfMeeting == "private"){

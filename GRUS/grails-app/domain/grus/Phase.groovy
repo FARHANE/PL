@@ -5,6 +5,7 @@ class Phase{
     String phaseName
     static belongsTo = [ process : Process]
     Tool currentTool
+    
     static hasMany =[ tools : Tool]
     Date created = new Date()
 

@@ -1,7 +1,7 @@
 package grus.tools.data
 
 class Data {
-	String data
+	String field
 	Date created = new Date()
     static constraints = {
     }

@@ -45,6 +45,7 @@
                                                     <div class="row">
                                                         <div class="col-md-12">
                                                             <div class="form-group">
+                                                                <h4 class="box-heading">Meeting topic</h4>
                                                                 <div class="input-icon">
                                                                     <i class="fa fa-flag"></i>
                                                                     <g:textField id="topic" name="topic" class="form-control" placeholder="Topic" required="true" />
@@ -79,6 +80,8 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <div class="radio" >
+                                                            <h4 class="box-heading">Visibility</h4>
+                                                            <div style="margin-left:50px;">
                                                             <label class="radio-inline">
                                                                 <g:radio id="privateBtn" name="typeOfMeeting" value="private" checked="true" />&nbsp;
                                                                 Private&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -87,32 +90,52 @@
                                                             <label class="radio-inline">
                                                                 <g:radio id="publicBtn" style="float:none" name="typeOfMeeting" value="public"  /> Public
                                                                 </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="radio" >
+                                                            <h4 class="box-heading">Anonym</h4>
+                                                            <div style="margin-left:50px;">
+                                                            <label class="radio-inline">
+                                                                <g:radio id="privateBtn" name="anonymat" value="true" checked="true" />&nbsp;
+                                                                Yes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                            </label>
                                                             
+                                                            <label class="radio-inline">
+                                                                <g:radio style="float:none" name="anonymat" value="false"  /> No
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="form-group">
-                                                        <g:textArea name="description" rows="5" placeholder="Description" class="form-control" />
+                                                        <h4 class="box-heading">Description</h4>
+                                                        <g:textArea name="description" rows="5" placeholder="Your text here ..." class="form-control" />
                                                     </div>
                                                     <hr />
-                                                    
-                                                    <select name="processModel">
-                                                        <g:each in="${processList}" var="process">
-                                                            <option value="${process.id}">${process.processModelName}</option>
-                                                        </g:each>
-                                                    </select>
-                                                    
+                                                    <div class="form-group">
+                                                        <h4 class="box-heading">Process model</h4>
+                                                        <select name="processModel">
+                                                            <g:each in="${processList}" var="process">
+                                                                <option value="${process.id}">${process.processModelName}</option>
+                                                            </g:each>
+                                                        </select>
+                                                    </div>
                                                     <hr/>
-                                                    <select name="facilitator">
-                                                        <g:each in="${facilitators}" var="facilitator">
-                                                            <option value="${facilitator.id}">${facilitator.username}</option>
-                                                        </g:each>
-                                                    </select>
-                                                    
+                                                    <div class="form-group">
+                                                        <h4 class="box-heading">Facilitator</h4>
+                                                        <select name="facilitator">
+                                                            <g:each in="${facilitators}" var="facilitator">
+                                                                <option value="${facilitator.id}">${facilitator.username}</option>
+                                                            </g:each>
+                                                        </select>
+                                                    </div>
                                                     <hr/>
 
                                                     <div class="row" id="usersPanel">
                                                         <div class="col-md-5">
+                                                        <h4 class="box-heading">Chose the participants</h4>
                                                                 <div class="panel panel-green">
                                                                     <div class="panel-heading">All users</div>
                                                                     <div class="panel-body">

@@ -118,7 +118,7 @@
                                                                         <td>${idea.author.username}</td>
 
                                                                         </g:else>
-                                                                        <td>${idea.data}</td>
+                                                                        <td>${idea.field}</td>
                                                                         <td><span class='label label-sm label-success'>${idea.created.format('dd/MM/yyyy HH:mm:ss')}</span></td>
                                                                     </tr>
                                                                     </g:each>
