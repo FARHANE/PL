@@ -6,7 +6,8 @@ class ToolModel {
 	//for decoration 
 	String icon = "fa-star"
 	String label ="label-red"
-
+    static belongsTo = PhaseModel
+    static hasMany = [phasesModel : PhaseModel]
     static constraints = {
     	toolModelDescription nullable: true
     	toolModelName nullable:false, unique: true

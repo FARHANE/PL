@@ -249,8 +249,7 @@
                         url: "/Clustering/commitChange",
                         data: { clustersCommit: JSON.stringify(clusters)} ,
                         success : function(data){
-                            alert("yes");
-                        //client.send("/app/commitChange", {}, JSON.stringify(data));
+                            
                         }                     
                     });
                     
