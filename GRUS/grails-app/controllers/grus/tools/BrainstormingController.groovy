@@ -21,7 +21,7 @@ class BrainstormingController {
             to Brainstorming controller so we can get the phase the process and the meeting ;)
         */
         def brainstorm = Brainstorming.findById(params.id)
-        def ideas = brainstorm.data
+        def ideas = brainstorm.data.sort{it.id}
         
         def meeting = ToolController.getMeetingFromPhase(brainstorm.phase)
         
@@ -92,29 +92,7 @@ class BrainstormingController {
 
 	    	} 
     }
-    @MessageMapping("/nextStep")
-    protected String nextStep(String brainstormingId, Principal principal) {
-    	Brainstorming.withTransaction{ status ->
-    		def brainstorming = Brainstorming.findById(brainstormingId)
-    		def phase = brainstorming.phase
-        	def process = phase.process
-        	def meeting = process.meeting
-        	def href = "/"+brainstorming.nextToolType+"/index/"+brainstorming.nextTool.id
-    		def builder = new JsonBuilder()
-	        builder {
-	            location(href)
-	            
-	        }
-
-	        brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/nextStep",builder.toString())
-        	for (user in meeting.participants){
-        		brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/nextStep",builder.toString())
-        	}
-
-    	}
-        
-        
-    }
+    
     @MessageMapping("/setAnonym")
     protected String setAnonym(String brainstormingAnonym, Principal principal) {
        Brainstorming.withTransaction{ status ->
@@ -138,5 +116,26 @@ class BrainstormingController {
         	}
     	}
         
+    }
+    @MessageMapping("/brainstormingNextStep")
+    protected String brainstormingNextStep(String toolId, Principal principal) {
+        Brainstorming.withTransaction{ status ->
+            def brainstorming = Brainstorming.findById(toolId)
+            def phase = brainstorming.phase
+            def process = phase.process
+            def meeting = process.meeting
+            def href = "/"+brainstorming.nextToolType+"/index/"+brainstorming.nextTool.id
+            def builder = new JsonBuilder()
+            builder {
+                location(href)
+                
+            }
+
+            brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/brainstormingNextStep",builder.toString())
+            for (user in meeting.participants){
+                brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/brainstormingNextStep",builder.toString())
+            }
+
+        }    
     }
 }

@@ -91,11 +91,14 @@
                                                                     <g:each var="idea" in="${data}">
                                                                     <tr>
                                                                         
-                                                                        <g:if test="${idea.author == null}">
+                                                                        <g:if test="${author && idea.author == null}">
                                                                             <td>Anonym</td>
                                                                         </g:if>
                                                                         <g:else>
+                                                                        <g:if test = "${author}">
                                                                         <td>${idea.author.username}</td>
+
+                                                                        </g:if>
 
                                                                         </g:else>
                                                                         <td>${idea.field}</td>
@@ -200,7 +203,7 @@
                     var cluster = ideaCluster.clusterField;
                     $('span#'+idea).text(cluster);
                 });
-                client.subscribe("/topic/nextStep", function(message) {
+                client.subscribe("/user/queue/clusteringNextStep", function(message) {
                         var href = JSON.parse(JSON.parse(message.body));
                         $(location).attr('href', href.location);
                     });
@@ -232,7 +235,7 @@
             });
             $('#nextStep').click(function(){
                     var href = "${clustering.id}";
-                    client.send("/app/nextStep", {}, JSON.stringify(href));
+                    client.send("/app/clusteringNextStep", {}, JSON.stringify(href));
                 });
             $('#saveClusters').click(function(){
                     var clusters = {}

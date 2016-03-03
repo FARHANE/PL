@@ -2,6 +2,7 @@ package grus
 import grails.plugin.springsecurity.annotation.Secured
 import org.springframework.security.core.context.SecurityContextHolder
 
+
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 class MeetingController {
 
@@ -12,29 +13,33 @@ class MeetingController {
             def processModel = ProcessModel.findById(params.processModel)
             def process = new Process(modelProcess : processModel)
             process.save(flush : true)
-
+            processModel.phasesOfModel =processModel.phasesOfModel.sort{it.id}
             
             
             processModel.phasesOfModel.each{
                 // create phase with the same name of model
-                //def modelPhaseObject = PhaseModel.findById(value)
+                
                 
                 def phase = new Phase(phaseName:it.modelPhaseName,process : process)
                 phase.save(flush : true)
+                println phase
                 def previousTool = null
-
-                it.toolsName.each{
-                    def  dc = grailsApplication.getDomainClass( 'grus.tools.'+it.toolModelName )
+                def toolsModelId = ToolsModelOfPhaseModel.findAllByPhase(it) 
+                println toolsModelId
+                toolsModelId.each{
+                    def toolModel = ToolModel.findById(it.tool.id)
+                    println toolModel
+                    def  dc = grailsApplication.getDomainClass( 'grus.tools.'+toolModel.toolModelName )
                     def toolObject = null
                     if(previousTool) {
-                        toolObject = dc.clazz.newInstance(toolName : it.toolModelName,phase :phase,previousTool:previousTool,previousToolType:previousTool.getToolName())
+                        toolObject = dc.clazz.newInstance(toolName : toolModel.toolModelName,phase :phase,previousTool:previousTool,previousToolType:previousTool.getToolName())
                     }
                     else{
-                        toolObject = dc.clazz.newInstance(toolName : it.toolModelName,phase :phase)
+                        toolObject = dc.clazz.newInstance(toolName : toolModel.toolModelName,phase :phase)
                     }
                     toolObject.save(flush : true, failOnError : true)
                     if(previousTool != null){
-                        previousTool.nextToolType = it.toolModelName
+                        previousTool.nextToolType = toolModel.toolModelName
                         previousTool.nextTool = toolObject
                         previousTool.save(flush:true)
                     }
@@ -59,8 +64,8 @@ class MeetingController {
            
             if(params.typeOfMeeting == "private"){
                 for(userId in params.participants){
-                	def user = User.findById(userId)
-                	meeting.addToParticipants(user)
+                    def user = User.findById(userId)
+                    meeting.addToParticipants(user)
                 }
                 meeting.save(flush:true)
                 facilitator.addToMeetingsFacilitated(meeting)
@@ -113,10 +118,30 @@ class MeetingController {
     }
     def show(){
         def meeting = Meeting.findById(params.id)
+
         def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()
         def process = meeting.process
         def modelProcess = process.modelProcess
         def phases= modelProcess.phasesOfModel
+        
+        
+        phases = phases.sort {it.id}
+        
+        def itemPhase = [:]
+        for(phase in phases)
+        {
+            def toolsModel = ToolsModelOfPhaseModel.findAllByPhase(phase)
+            
+            def item = []
+            for(toolModel in toolsModel)
+            {
+                def toolName = ToolModel.findById(toolModel.tool.id).toolModelName
+                item.push(toolName)
+            }
+            itemPhase.put(phase.modelPhaseName,item)
+        }
+        
+        
         [meeting:meeting,facilitator:meeting.facilitator,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process]
     }
 }

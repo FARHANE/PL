@@ -22,6 +22,7 @@
                     <div class="clearfix">
                     </div>
                 </div>
+                
                 <!--END TITLE & BREADCRUMB PAGE-->
                 <div class="page-content">
                     <div id="tab-general">
@@ -181,7 +182,7 @@
 
                         $("#listIdeas").append(ideaHtml);
                     });
-                    client.subscribe("/user/queue/nextStep", function(message) {
+                    client.subscribe("/user/queue/brainstormingNextStep", function(message) {
                         var href = JSON.parse(JSON.parse(message.body));
                         $(location).attr('href', href.location);
                     });
@@ -227,7 +228,7 @@
                 $('#nextStep').click(function(){
 
                     var href = "${brainstorm.id}";
-                    client.send("/app/nextStep", {}, JSON.stringify(href));
+                    client.send("/app/brainstormingNextStep", {}, JSON.stringify(href));
                 });
                 $('input[name="anonym"]').change(function(){
                     anonymat=$(this).val();

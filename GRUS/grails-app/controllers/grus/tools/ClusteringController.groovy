@@ -21,12 +21,16 @@ class ClusteringController {
     	def clustering = Clustering.findById(params.id)
     	def clusters = clustering.data
     	def previousTool = clustering.previousTool
-    	def data = previousTool.data
-
+    	def data = previousTool.data.sort{it.id}
+        def author = false
+        if(data && data.getAt(0).hasProperty("author")){
+            author = true
+        }
+        println author
     	def meeting = ToolController.getMeetingFromPhase(clustering.phase)
         def auth = SecurityContextHolder.getContext().getAuthentication()
         def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())    	
-    	[clustering:clustering,clusters:clusters,data:data,isFacilitator:isFacilitator]
+    	[author : author, clustering:clustering,clusters:clusters,data:data,isFacilitator:isFacilitator]
     }
     def saveCluster(){
         if(request.method == 'POST'){
@@ -121,4 +125,26 @@ class ClusteringController {
         }     
         
     }
+    @MessageMapping("/clusteringNextStep")
+    protected String clusteringNextStep(String toolId, Principal principal) {
+        Brainstorming.withTransaction{ status ->
+            def clustering = Clustering.findById(toolId)
+            def phase = clustering.phase
+            def process = phase.process
+            def meeting = process.meeting
+            def href = "/"+clustering.nextToolType+"/index/"+clustering.nextTool.id
+            def builder = new JsonBuilder()
+            builder {
+                location(href)
+                
+            }
+
+            brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/clusteringNextStep",builder.toString())
+            for (user in meeting.participants){
+                brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/clusteringNextStep",builder.toString())
+            }
+
+        }    
+    }
+    
 }

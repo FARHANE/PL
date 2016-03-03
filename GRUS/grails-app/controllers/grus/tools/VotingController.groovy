@@ -18,7 +18,7 @@ import java.security.Principal
 
 
 class VotingController {
-
+    SimpMessagingTemplate brokerMessagingTemplate
     def index() { 
     	def voting = Voting.findById(params.id)
     	
@@ -27,7 +27,7 @@ class VotingController {
     	def data = previousTool.data
         if(voting.data.isEmpty()){// create votingdata if that not existe
             for( element in data){// for echa item in the previous tool we create a votingData
-                def vote = new VotingData(field :element.field ,item :element).save(flush : true,failOnError :  true)
+                def vote = new VotingData(voting: voting,field :element.field ,item :element).save(flush : true,failOnError :  true)
                 voting.addToData(vote) // add votingdata to voting
             }
             voting.save(flush:true)
@@ -39,13 +39,14 @@ class VotingController {
     	[voting:voting,votes:votes,data:data,isFacilitator:isFacilitator]
     }
     def saveModality(){
+        
         if(request.method == 'POST'){
             def modalityJson = new JsonSlurper().parseText(request.getParameter("modalityVote"))
             println modalityJson.modalityText
 
             def voteData = VotingData.findById(modalityJson.voteId)
 
-            def modality = new Modality(modalityName :modalityJson.modalityText).save(flush:true,failOnError:true)
+            def modality = new Modality(vote: voteData,modalityName :modalityJson.modalityText).save(flush:true,failOnError:true)
             
             voteData.addToModalities(modality)
             voteData.save(flush:true) 
@@ -83,4 +84,43 @@ class VotingController {
 
             } 
     }
+    def addRating(){
+        
+        if(request.method == 'POST'){
+            def modalityJson = new JsonSlurper().parseText(request.getParameter("modality"))
+            
+
+            def modality = Modality.findById(modalityJson.modalityId)
+
+            modality.rating++
+            modality.save(flush : true)
+            
+            render modality.id
+
+              
+        }   
+    }
+    @MessageMapping("/votingNextStep")
+    protected String votingNextStep(String toolId, Principal principal) {
+        Brainstorming.withTransaction{ status ->
+            def voting = Voting.findById(toolId)
+            def phase = voting.phase
+            def process = phase.process
+            def meeting = process.meeting
+            def href = "/"+voting.nextToolType+"/index/"+voting.nextTool.id
+            def builder = new JsonBuilder()
+            builder {
+                location(href)
+                
+            }
+
+            brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/votingNextStep",builder.toString())
+            for (user in meeting.participants){
+                brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/votingNextStep",builder.toString())
+            }
+
+        }    
+    }
+
+
 }

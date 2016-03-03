@@ -54,9 +54,12 @@
                                                                 <tr>
                                                                     
                                                                     <th>Item</th>
-                                                                    
                                                                     <th>Rating</th>
+                                                                    <th>Vote<th>
+                                                                    <g:if test="${isFacilitator == true}">
                                                                     <th>add modality<th>
+                                                                    </g:if>
+                                                                   
                                                                 </tr>
                                                                 </thead>
                                                                 <tbody id="listvotes">
@@ -75,12 +78,23 @@
                                                                         </td>
                                                                         <td>
                                                                             <div class="input-group">
+                                                                                <button id="${vote.id}" class="btn btn-success OkBtn" type="button">Ok</button>
+                                                                                
+                                                                            </div>
+                                                                        </td>
+                                                                        <g:if test="${isFacilitator == true}">
+                                                                        <td>
+                                                                            <div class="input-group">
                                                                                 <input type="text" placeholder="Add a modality" class="form-control" name="modalityText" id="${vote.id}">
                                                                                 <span class="input-group-btn">
                                                                                     <button id="${vote.id}" class="btn btn-success addModalityBtn" type="button"><i class="fa fa-plus-circle"></i></button>
                                                                                 </span>
                                                                             </div>
                                                                         </td>
+                                                                        </g:if>
+                                                                        
+                                                                        
+                                                                        
                                                                     </tr>
                                                                     </g:each>
                                                                 
@@ -137,24 +151,21 @@
             client.connect({}, function() {
                 client.subscribe("/user/queue/addModality", function(message) {
                     var modality = JSON.parse(JSON.parse(message.body));
-                    alert("new modality");
-                    /*var clusterText = cluster.clusterName;
-                    var clusterId = cluster.clusterId;
-
-                    $('.clusterList').append("<option value='"+clusterId+"'>"+clusterText+"</option>");
-                    $("#availableClusters").append("<span class='list-group-item'>"+clusterText+"</span>");
-                    if(firstadd){
-                        firstadd = false;
-                        $('.view').text(clusterText);
-                    }
-                    $("#listvotes").append(voteHtml);
-                });*/
+                    
+                    var modalityName = modality.modalityName;
+                    var modalityId = modality.modalityId;
+                    var voteId = modality.voteId;
+                    $("select[id='"+voteId+"']").append("<option value='"+modalityId+"'>"+modalityName+"</option>");
+                });
+                client.subscribe("/user/queue/votingNextStep", function(message) {
+                        var href = JSON.parse(JSON.parse(message.body));
+                        $(location).attr('href', href.location);
+                    });
                 
             });
 
             
             $('.addModalityBtn').click(function(){
-                    //alert($("input[id='"+$(this).attr('id')+"']").val());
                     var modality = $("input[id='"+$(this).attr('id')+"']").val();
                     var voteDataId=$(this).attr('id');
                     
@@ -162,7 +173,7 @@
                             "voteId" : voteDataId,
                             "modalityText" : modality     
                         };
-                        alert('hello');
+                        
                     $.ajax({
                         type: "POST",
                         url: "/Voting/saveModality",
@@ -173,6 +184,29 @@
                     }); 
                     
             });
+            $(".OkBtn").click(function(){
+                
+                 var modalityId =$("select[id = '"+$(this).attr('id')+"'] option:selected").val();
+                 var mod = {
+                            "modalityId" : modalityId     
+                        };
+                $.ajax({
+                        type: "POST",
+                        url: "/Voting/addRating",
+                        data: { modality: JSON.stringify(mod)} ,
+                        success : function(data){
+                        
+                        }                     
+                    }); 
+                $("select[id = '"+$(this).attr('id')+"']").prop("disabled",true);
+                $(this).remove();
+
+            });
+            $('#nextStep').click(function(){
+
+                    var href = "${voting.id}";
+                    client.send("/app/votingNextStep", {}, JSON.stringify(href));
+                });
         })
     </script>
     </content>
