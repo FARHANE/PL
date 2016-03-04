@@ -195,9 +195,11 @@
                         url: "/Voting/addRating",
                         data: { modality: JSON.stringify(mod)} ,
                         success : function(data){
-                        $("select[id = '"+$(this).attr('id')+"']").prop("disabled",true);
+                        
                         }                     
                     }); 
+                $("select[id = '"+$(this).attr('id')+"']").prop("disabled",true);
+                $(this).remove();
 
             });
             $('#nextStep').click(function(){

@@ -13,15 +13,15 @@ class User implements Serializable {
 
 	String username
 	String password
-	String firstName
-	String lastName
-	String emailAddress
-	String company
-	String job
+	String firstName =""
+	String lastName = ""
+	String emailAddress =""
+	String company  = ""
+	String job = ""
 	Date created = new Date()
 	Date birthday
 	String picture = "/users/default.gif"
-	String gender
+	String gender ="M"
 
 	boolean enabled = true
 	boolean accountExpired
@@ -58,11 +58,11 @@ class User implements Serializable {
 	static constraints = {
 		username blank: false, unique: true
 		password blank: false
-		firstName nullable : true
-		lastName nullable : true
-		emailAddress nullable : true
-		company nullable : true
-		job nullable : true
+		firstName nullable : true,blank : true
+		lastName nullable : true,blank : true
+		emailAddress nullable : true,blank : true
+		company nullable : true,blank : true
+		job nullable : true,blank : true
 		birthday nullable : true
 		picture nullable : true
 		gender nullable : true,inList: ["M","F"]

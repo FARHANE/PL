@@ -1,6 +1,9 @@
 package grus
 import grails.plugin.springsecurity.annotation.Secured
 import org.springframework.security.core.context.SecurityContextHolder
+import groovy.json.JsonSlurper
+import org.springframework.web.multipart.MultipartFile
+import grails.web.context.ServletContextHolder
 
 
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
@@ -8,27 +11,20 @@ class MeetingController {
 
     def add(){
         if(request.method == 'POST'){
-           
             def facilitator = User.findById(params.facilitator)
             def processModel = ProcessModel.findById(params.processModel)
             def process = new Process(modelProcess : processModel)
             process.save(flush : true)
             processModel.phasesOfModel =processModel.phasesOfModel.sort{it.id}
-            
-            
+            def currentPhase = null
+            def previousTool = null
             processModel.phasesOfModel.each{
                 // create phase with the same name of model
-                
-                
                 def phase = new Phase(phaseName:it.modelPhaseName,process : process)
                 phase.save(flush : true)
-                println phase
-                def previousTool = null
                 def toolsModelId = ToolsModelOfPhaseModel.findAllByPhase(it) 
-                println toolsModelId
                 toolsModelId.each{
                     def toolModel = ToolModel.findById(it.tool.id)
-                    println toolModel
                     def  dc = grailsApplication.getDomainClass( 'grus.tools.'+toolModel.toolModelName )
                     def toolObject = null
                     if(previousTool) {
@@ -46,16 +42,22 @@ class MeetingController {
                     previousTool = toolObject
                     phase.addToTools(toolObject)
                 }
-                phase.currentTool = phase.tools.asList().first()
-                
+                if(phase.tools){
+                    phase.currentTool = phase.tools.asList().first()
+                }
                 phase.save(flush:true)
-               
-                process.addToPhases(phase)
-                
-
+                if(currentPhase==null){
+                        currentPhase = phase                    
+                }
+                else{
+                        currentPhase.nextPhase = phase
+                }   
+                currentPhase.save(flush: true)
+                process.addToPhases(phase)                
             }
-            process.currentPhase = process.phases.asList().first()
-            
+            if(process.phases){
+                process.currentPhase = process.phases.asList().first()
+            }
             process.save(flush:true)
             
 
@@ -86,6 +88,7 @@ class MeetingController {
             return
                
         }
+
         else{
             def processList = ProcessModel.findAll()
             def role = Role.findByAuthority("ROLE_SUPERUSER")
@@ -117,16 +120,14 @@ class MeetingController {
         
     }
     def show(){
+        def user = User.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
         def meeting = Meeting.findById(params.id)
-
         def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()
         def process = meeting.process
         def modelProcess = process.modelProcess
         def phases= modelProcess.phasesOfModel
-        
-        
         phases = phases.sort {it.id}
-        
+       
         def itemPhase = [:]
         for(phase in phases)
         {
@@ -142,6 +143,21 @@ class MeetingController {
         }
         
         
-        [meeting:meeting,facilitator:meeting.facilitator,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process]
+        [meeting:meeting,itemPhase:itemPhase,facilitator:meeting.facilitator,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process, user:user]
+    }
+    
+    def addUser(){
+        def auth = SecurityContextHolder.getContext().getAuthentication()
+        def user = User.findById(auth.getPrincipal().getId())       
+        def meetingJson = new JsonSlurper().parseText(request.getParameter("meeting"))
+        def meeting = Meeting.findById(meetingJson.meetingId)
+        meeting.addToParticipants(user)
+        meeting.save(flush: true)
+        user.addToMeetingsParticipatedIn(meeting)
+        user.save(flush:true)       
+        render user.id
+    }
+    def theEndMessage(){
+        
     }
 }

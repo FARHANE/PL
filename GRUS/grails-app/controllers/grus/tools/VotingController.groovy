@@ -21,22 +21,31 @@ class VotingController {
     SimpMessagingTemplate brokerMessagingTemplate
     def index() { 
     	def voting = Voting.findById(params.id)
-    	
-
-    	def previousTool = voting.previousTool
-    	def data = previousTool.data
-        if(voting.data.isEmpty()){// create votingdata if that not existe
-            for( element in data){// for echa item in the previous tool we create a votingData
-                def vote = new VotingData(voting: voting,field :element.field ,item :element).save(flush : true,failOnError :  true)
-                voting.addToData(vote) // add votingdata to voting
-            }
-            voting.save(flush:true)
+        if(voting.previousTool == null ){
+            flash.messageTitle ="Ooops !"
+            flash.message = "The meeting can not start with a voting "
+            flash.messageType= "note-danger"
+            render(view: '/user/userNotification')
         }
-        def votes = voting.data
-    	def meeting = ToolController.getMeetingFromPhase(voting.phase)
-        def auth = SecurityContextHolder.getContext().getAuthentication()
-        def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())    	
-    	[voting:voting,votes:votes,data:data,isFacilitator:isFacilitator]
+        else{
+            def meeting = ToolController.getMeetingFromPhase(voting.phase)
+            def auth = SecurityContextHolder.getContext().getAuthentication()
+            def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
+            def previousTool = voting.previousTool
+            def data = previousTool.data
+            if(isFacilitator && voting.data.isEmpty()){// create votingdata if that not existe
+                for( element in data){// for echa item in the previous tool we create a votingData
+                    def vote = new VotingData(voting: voting,field :element.field ,item :element).save(flush : true,failOnError :  true)
+                    voting.addToData(vote) // add votingdata to voting
+                }
+                voting.save(flush:true)
+            }
+            def votes = voting.data
+            
+                    
+            [voting:voting,votes:votes,data:data,isFacilitator:isFacilitator]
+        }
+    	
     }
     def saveModality(){
         
@@ -101,24 +110,26 @@ class VotingController {
         }   
     }
     @MessageMapping("/votingNextStep")
-    protected String votingNextStep(String toolId, Principal principal) {
-        Brainstorming.withTransaction{ status ->
+    protected String votingNextStep(String toolId, Principal principal) {       
+        Voting.withTransaction{ status ->
             def voting = Voting.findById(toolId)
             def phase = voting.phase
             def process = phase.process
             def meeting = process.meeting
-            def href = "/"+voting.nextToolType+"/index/"+voting.nextTool.id
+            def href = null
+            href = "/Consensus/index/"+toolId
+             
             def builder = new JsonBuilder()
             builder {
-                location(href)
-                
+                location(href)                
             }
 
             brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/votingNextStep",builder.toString())
+            sleep(100)
             for (user in meeting.participants){
                 brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/votingNextStep",builder.toString())
             }
-
+            ToolController.setNextTool(toolId)
         }    
     }
 

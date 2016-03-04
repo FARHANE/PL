@@ -234,6 +234,7 @@
                 client.send("/app/changeCluster", {}, JSON.stringify(ideaCluster));
             });
             $('#nextStep').click(function(){
+                    $('#saveClusters').click();
                     var href = "${clustering.id}";
                     client.send("/app/clusteringNextStep", {}, JSON.stringify(href));
                 });

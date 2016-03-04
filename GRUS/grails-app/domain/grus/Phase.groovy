@@ -8,13 +8,13 @@ class Phase{
     
     static hasMany =[ tools : Tool]
     Date created = new Date()
-
+    Phase nextPhase = null
     static constraints = {
         tools nullable: true
         currentTool nullable:true
         process nullable:true
         currentTool nullable : true
-        
+        nextPhase nullable:true
 
     }
     static mapping = {

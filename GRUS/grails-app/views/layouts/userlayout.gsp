@@ -40,32 +40,25 @@
                 <a id="logo" href="index.html" class="navbar-brand"><span class="fa fa-rocket"></span><span class="logo-text">GRUS</span><span style="display: none" class="logo-text-icon">µ</span></a></div>
             <div class="topbar-main"><a id="menu-toggle" href="#" class="hidden-xs"><i class="fa fa-bars"></i></a>
                 
-                <form id="topbar-search" action="" method="" class="hidden-sm hidden-xs">
-                    <div class="input-icon right text-white"><a href="#"><i class="fa fa-search"></i></a><input type="text" placeholder="Search here..." class="form-control text-white"/></div>
-                </form>
+                
                 
                 <ul class="nav navbar navbar-top-links navbar-right mbn">
-                    <li class="dropdown"><a data-hover="dropdown" href="#" class="dropdown-toggle"><i class="fa fa-bell fa-fw"></i><span class="badge badge-green">3</span></a>
-                        
-                    </li>
-                    <li class="dropdown"><a data-hover="dropdown" href="#" class="dropdown-toggle"><i class="fa fa-envelope fa-fw"></i><span class="badge badge-orange">7</span></a>
-                        
-                    </li>
-                    <li class="dropdown"><a data-hover="dropdown" href="#" class="dropdown-toggle"><i class="fa fa-tasks fa-fw"></i><span class="badge badge-yellow">8</span></a>
-                        
-                    </li>
-                    <li class="dropdown topbar-user"><a data-hover="dropdown" href="#" class="dropdown-toggle"><img src="/assets/${session.userPicture}" alt="" class="img-responsive img-circle"/>&nbsp;<span class="hidden-xs">${session.username}</span>&nbsp;<span class="caret"></span></a>
+                    
+                    <li class="dropdown topbar-user"><a data-hover="dropdown" href="#" class="dropdown-toggle"><img src="${resource(dir:'/images/users',file:session.userPicture)}" alt="" class="img-responsive img-circle"/>&nbsp;<span class="hidden-xs">${session.username}</span>&nbsp;<span class="caret"></span></a>
                         <ul class="dropdown-menu dropdown-user pull-right">
                             <li><a href="${createLink(controller:'user', action:'profile')}"><i class="fa fa-user"></i>My Profile</a></li>
-                            <li><a href="#"><i class="fa fa-calendar"></i>My Calendar</a></li>
-                            <li><a href="#"><i class="fa fa-envelope"></i>My Inbox<span class="badge badge-danger">3</span></a></li>
-                            <li><a href="#"><i class="fa fa-tasks"></i>My Tasks<span class="badge badge-success">7</span></a></li>
+                            
+
+                            <li><a href="/meeting/myMeetings"><i class="fa fa-calendar"></i>My meeting</a></li>
+                            
+                            <li><a href="/meeting/publicMeetings"><i class="fa fa-share-alt"></i>Public meeting</a></li>
+                            
                             <li class="divider"></li>
-                            <li><a href="#"><i class="fa fa-lock"></i>Lock Screen</a></li>
-                            <li><a href="Login.html"><i class="fa fa-key"></i>Log Out</a></li>
+                           
+                            <li><a href="/logout"><i class="fa fa-key"></i>Log Out</a></li>
                         </ul>
                     </li>
-                    <li id="topbar-chat" class="hidden-xs"><a href="javascript:void(0)" data-step="4" data-intro="&lt;b&gt;Form chat&lt;/b&gt; keep you connecting with other coworker" data-position="left" class="btn-chat"><i class="fa fa-comments"></i><span class="badge badge-info">3</span></a></li>
+                    
                 </ul>
             </div>
         </nav>
@@ -80,7 +73,7 @@
                     
                      <div class="clearfix"></div>
                      
-                    <li><a href="${createLink(controller:'user', action:'dashboard')}"><i class="fa fa-tachometer fa-fw">
+                    <li><a href="${createLink(controller:'user', action:'index')}"><i class="fa fa-tachometer fa-fw">
                         <div class="icon-bg bg-orange"></div>
                     </i><span class="menu-title">Dashboard</span></a></li>
                   
@@ -90,19 +83,18 @@
 
                 </li>
 
+                    <g:if test = "${session.userRole.authority != 'ROLE_USER'}">
 
                     <li><a href="${createLink(controller:'processModel', action:'createProcessModel')}"><i class="fa fa-refresh">
                         <div class="icon-bg bg-blue"></div>
                     </i><span class="menu-title">Process Model</span></a></li>
 
-                    <li><a href="Profile.html"><i class="fa fa-edit fa-fw">
+                    </g:if>
+
+                    <li><a href="/user/profile"><i class="fa fa-edit fa-fw">
                         <div class="icon-bg bg-grey"></div>
                     </i><span class="menu-title">Profile</span></a></li>
 
-
-                    <li><a href="Email.html"><i class="fa fa-envelope-o">
-                        <div class="icon-bg bg-primary"></div>
-                    </i><span class="menu-title">Email</span></a></li>
                     
                     
                 </ul>
@@ -133,7 +125,7 @@
 
 
 
-	<g:pageProperty name="page.javascripts"/>
+    <g:pageProperty name="page.javascripts"/>
     <!--CORE JAVASCRIPT-->
     <script type="text/javascript" src="${createLinkTo(dir:'javascripts',file:'main.js')}"></script>
      
@@ -154,4 +146,4 @@
     
 </body>
 </html>
-	
+    

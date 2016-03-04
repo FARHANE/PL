@@ -146,11 +146,14 @@
                                                     <div class="col-md-6" >
                                                         <div style="background-color :#eeeeee">
                                                         <div class="timeline-centered timeline-sm">
-                                                            <article class="timeline-entry">
                                                             
+                                                            <article class="timeline-entry">
                                                                 <div class="timeline-entry-inner">
-                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.endDate.format("dd/MM/yyyy")}</span><span>${meeting.endDate.format("HH:mm")}</span></time>
-                                                                    <div  class="timeline-icon"><i class="fa fa-flag"></i></div>
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.startDate.format("dd/MM/yyyy")}</span><span>${meeting.startDate.format("HH:mm")}</span></time>
+                                                                    <div class="timeline-icon bg-violet"><i class="fa fa-refresh"></i></div>
+                                                                    <div class="timeline-label"><h4 class="timeline-title">Process : ${modelProcess.processModelName}</h4>
+
+                                                                        <p>${modelProcess.processModelDescription}</p></div>
                                                                 </div>
                                                             </article>
                                                             <g:each var="phase" in="${phases}" status="i" >
@@ -159,36 +162,30 @@
                                                                 <div class="timeline-entry-inner">
                                                                     <time datetime="2014-01-10T03:45" class="timeline-time">
                                                                     
-                                                                        <g:if test="${process.currentPhase ==phase.id}">
+                                                                        <g:if test="${process.currentPhase.id ==phase.id}">
 
                                                                         <span style="color:#f0ad4e;font-size:1.1em" >Current Phase</span>
                                                                         
                                                                         </g:if>
                                                                     </time>
-                                                                    <div class="timeline-icon bg-${ (process.currentPhase ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
-                                                                    <div class="timeline-label bg-${ (process.currentPhase ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
+                                                                    <div class="timeline-icon bg-${ (process.currentPhase.id ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase.id ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
+                                                                    <div class="timeline-label bg-${ (process.currentPhase.id ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
                                                                     <p>
-                                                                        <g:each var="tool" in="${phase.toolsName}">
-                                                                            <div><i class="fa fa-gear"></i>&nbsp;${tool.toolModelName}</div>
+                                                                        <g:each var="tool" in="${itemPhase[phase.modelPhaseName]}">
+                                                                            <div><i class="fa fa-gear"></i>&nbsp;${tool}</div>
                                                                             
-                                                                            <g:if test="${process.currentPhase==phase.id && phase.currentTool.toString() == tool.key}">
-                                                                                <g:set var="toolName" value="${tool.value}" />
-                                                                                <g:set var="toolId" value="${tool.key}" />
-                                                                               
-                                                                            </g:if>
+
                                                                             
                                                                         </g:each>
                                                                     </p></div>
                                                                 </div>
                                                             </article>
                                                         </g:each>
-                                                            <article class="timeline-entry">
+                                                           <article class="timeline-entry">
+                                                            
                                                                 <div class="timeline-entry-inner">
-                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.startDate.format("dd/MM/yyyy")}</span><span>${meeting.startDate.format("HH:mm")}</span></time>
-                                                                    <div class="timeline-icon bg-violet"><i class="fa fa-refresh"></i></div>
-                                                                    <div class="timeline-label"><h4 class="timeline-title">Process : ${modelProcess.processModelName}</h4>
-
-                                                                        <p>${modelProcess.processModelDescription}</p></div>
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.endDate.format("dd/MM/yyyy")}</span><span>${meeting.endDate.format("HH:mm")}</span></time>
+                                                                    <div  class="timeline-icon"><i class="fa fa-flag"></i></div>
                                                                 </div>
                                                             </article>
                                                             
