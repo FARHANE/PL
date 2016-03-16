@@ -83,10 +83,13 @@
 
                 </li>
 
+                    <g:if test = "${session.userRole.authority != 'ROLE_USER'}">
 
                     <li><a href="${createLink(controller:'processModel', action:'createProcessModel')}"><i class="fa fa-refresh">
                         <div class="icon-bg bg-blue"></div>
                     </i><span class="menu-title">Process Model</span></a></li>
+
+                    </g:if>
 
                     <li><a href="/user/profile"><i class="fa fa-edit fa-fw">
                         <div class="icon-bg bg-grey"></div>

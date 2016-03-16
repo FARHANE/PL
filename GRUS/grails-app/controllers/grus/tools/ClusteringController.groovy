@@ -12,6 +12,8 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import grus.ToolsModelOfPhaseModel
+import grus.ToolModel
 import java.security.Principal
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 
@@ -36,8 +38,55 @@ class ClusteringController {
             
         	def meeting = ToolController.getMeetingFromPhase(clustering.phase)
             def auth = SecurityContextHolder.getContext().getAuthentication()
-            def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())    	
-        	[author : author, clustering:clustering,clusters:clusters,data:data,isFacilitator:isFacilitator]
+            def user = User.findById(auth.getPrincipal().getId())
+            def isParticipant = user in meeting.participants
+            def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
+            if(!isFacilitator && !isParticipant){
+                flash.messageTitle ="You can not access to this meeting"
+                flash.message = 'Your name is not in list of participants'
+                flash.messageType= "note-warning"
+                render(view: '/user/userNotification')
+            }
+            if(!isFacilitator && meeting.state == "coming"){
+                flash.messageTitle ="The meeting is not begin yet"
+                flash.message = 'The facilitator of the meeting must start the meeting before you can participate in '
+                flash.messageType= "note-info"
+                render(view: '/user/userNotification')
+            }
+            else{
+                meeting.state = "open"
+                meeting.save(flush : true)
+            }
+            /*timeline*/
+        def process = meeting.process
+        def currentPhase = process.currentPhase
+        def currentTool = currentPhase.currentTool 
+        def toolsOfCurrentPhase = currentPhase.tools.sort{it.id}
+        
+        def position = 0
+        toolsOfCurrentPhase.eachWithIndex { item, index ->
+            if(item.id == currentTool.id){
+                position = index
+            }
+        }
+        
+        def modelProcess = process.modelProcess
+        def phases= modelProcess.phasesOfModel
+        phases = phases.sort {it.id}
+        def itemPhase = [:]
+        for(phase in phases)
+        {
+            def toolsModel = ToolsModelOfPhaseModel.findAllByPhase(phase)
+            
+            def item = []
+            for(toolModel in toolsModel)
+            {
+                def toolName = ToolModel.findById(toolModel.tool.id).toolModelName
+                item.push(toolName)
+            }
+            itemPhase.put(phase.modelPhaseName,item)
+        }
+            [author : author, clustering:clustering,clusters:clusters,data:data,isFacilitator:isFacilitator,meeting:meeting,itemPhase:itemPhase,modelProcess:modelProcess,phases:phases,process:process,position:position]
             
         }
     }
@@ -114,19 +163,22 @@ class ClusteringController {
         if(request.method == 'POST'){
 
             def clusterJson = new JsonSlurper().parseText(request.getParameter("clustersCommit"))
-           	clusterJson.each{clusterId,ithemsId -> // ithems like ideas for example
-           		def cluster = ClusteringData.findById(clusterId)
-           		cluster.elements.clear()
-           		//def clustering = cluster.clustering
-           		//def previousTool = clustering.previousTool
+            if(clusterJson.toString){
+              clusterJson.each{clusterId,ithemsId -> // ithems like ideas for example
+                def cluster = ClusteringData.findById(clusterId)
+                cluster.elements.clear()
+                //def clustering = cluster.clustering
+                //def previousTool = clustering.previousTool
 
-           		ithemsId.each{
-           			def data = Data.findById(it)
-           			cluster.addToElements(data)
-           		}
-           		cluster.save(flush:true)
+                ithemsId.each{
+                    def data = Data.findById(it)
+                    cluster.addToElements(data)
+                }
+                cluster.save(flush:true)
 
-           	}
+            }  
+            }
+            
            
 		    render true
 

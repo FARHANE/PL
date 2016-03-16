@@ -17,10 +17,10 @@ class MeetingController {
             process.save(flush : true)
             processModel.phasesOfModel =processModel.phasesOfModel.sort{it.id}
             def currentPhase = null
-            def previousTool = null
             processModel.phasesOfModel.each{
+            def previousTool = null
                 // create phase with the same name of model
-                def phase = new Phase(phaseName:it.modelPhaseName,process : process)
+                def phase = new Phase(phaseName:it.modelPhaseName,process : process,phaseModel : it)
                 phase.save(flush : true)
                 def toolsModelId = ToolsModelOfPhaseModel.findAllByPhase(it) 
                 toolsModelId.each{
@@ -46,13 +46,13 @@ class MeetingController {
                     phase.currentTool = phase.tools.asList().first()
                 }
                 phase.save(flush:true)
-                if(currentPhase==null){
-                        currentPhase = phase                    
-                }
-                else{
+                if(currentPhase!=null){
                         currentPhase.nextPhase = phase
-                }   
+                                           
                 currentPhase.save(flush: true)
+                }
+                  
+                currentPhase = phase
                 process.addToPhases(phase)                
             }
             if(process.phases){
@@ -125,6 +125,16 @@ class MeetingController {
         def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()
         def process = meeting.process
         def modelProcess = process.modelProcess
+        def currentPhase = process.currentPhase
+        def currentTool = currentPhase.currentTool 
+        def toolsOfCurrentPhase = currentPhase.tools.sort{it.id}
+        def position = 0
+        toolsOfCurrentPhase.eachWithIndex { item, index ->
+            if(item.id == currentTool.id){
+                position = index
+            }
+        
+        }
         def phases= modelProcess.phasesOfModel
         phases = phases.sort {it.id}
        
@@ -143,7 +153,7 @@ class MeetingController {
         }
         
         
-        [meeting:meeting,itemPhase:itemPhase,facilitator:meeting.facilitator,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process, user:user]
+        [meeting:meeting,itemPhase:itemPhase,facilitator:meeting.facilitator,position:position,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process, user:user]
     }
     
     def addUser(){

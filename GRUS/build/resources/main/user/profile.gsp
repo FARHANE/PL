@@ -85,7 +85,7 @@
                                                 <div class="col-sm-9 controls">
                                                     <div class="row">
                                                         <div class="col-xs-4">
-                                                         <g:textField id="password" placeholder="New password" name="password" class="form-control"   />
+                                                         <g:passwordField id="password" placeholder="New password" type="password" name="password" class="form-control"   />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -95,7 +95,7 @@
                                                 <div class="col-sm-9 controls">
                                                     <div class="row">
                                                         <div class="col-xs-4">
-                                                        <g:textField id="passwordConfirmation" placeholder="Confirm password" name="passwordConfirmation" class="form-control"   />
+                                                        <g:passwordField id="passwordConfirmation" placeholder="Confirm password" type="password" name="passwordConfirmation" class="form-control"   />
                                                         </div>
                                                     </div>
                                                 </div>

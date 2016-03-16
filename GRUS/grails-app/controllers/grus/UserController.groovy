@@ -42,10 +42,10 @@ class UserController {
 					User user = new User(firstName:params.firstName,lastName:params.lastName,username:params.username, email:params.email, password:params.password,picture:"/users/default.gif")
 					user.save(flush: true,failOnError: true)
 
-					def authority = Role.findByAuthority("ROLE_USER")
+					def authority = Role.findByAuthority("ROLE_SUPERUSER")
 					UserRole.create(user,authority,true)
 					List<GrantedAuthority> grantedAuths = new ArrayList<GrantedAuthority>();
-    				grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
+    				grantedAuths.add(new SimpleGrantedAuthority("ROLE_SUPERUSER"));
 
 					SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user.username,user.password,grantedAuths)) 
 					redirect(controller: "user",action:"index")

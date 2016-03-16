@@ -8,6 +8,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import java.security.Principal
 import grails.plugin.springsecurity.annotation.Secured
+import grus.User
+import grus.ToolsModelOfPhaseModel
+import grus.ToolModel
 
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 class ConsensusController {
@@ -16,8 +19,25 @@ class ConsensusController {
     	def voting = Voting.findById(params.id)
         def meeting = ToolController.getMeetingFromPhase(voting.phase)
         def auth = SecurityContextHolder.getContext().getAuthentication()
-        def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
-    	
+        def user = User.findById(auth.getPrincipal().getId())
+            def isParticipant = user in meeting.participants
+            def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
+            if(!isFacilitator && !isParticipant){
+                flash.messageTitle ="You can not access to this meeting"
+                flash.message = 'Your name is not in list of participants'
+                flash.messageType= "note-warning"
+                render(view: '/user/userNotification')
+            }
+            if(!isFacilitator && meeting.state == "coming"){
+                flash.messageTitle ="The meeting is not begin yet"
+                flash.message = 'The facilitator of the meeting must start the meeting before you can participate in '
+                flash.messageType= "note-info"
+                render(view: '/user/userNotification')
+            }
+            else{
+                meeting.state = "open"
+                meeting.save(flush : true)
+            }
     	
     	def charts =[]
     	for(data in voting.data){
@@ -33,8 +53,37 @@ class ConsensusController {
     		}
     		charts.push(chartData)
     	}
+        /*timeline*/
+        def process = meeting.process
+        def currentPhase = process.currentPhase
+        def currentTool = currentPhase.currentTool 
+        def toolsOfCurrentPhase = currentPhase.tools.sort{it.id}
+        
+        def position = 0
+        toolsOfCurrentPhase.eachWithIndex { item, index ->
+            if(item.id == currentTool.id){
+                position = index
+            }
+        }
+        
+        def modelProcess = process.modelProcess
+        def phases= modelProcess.phasesOfModel
+        phases = phases.sort {it.id}
+        def itemPhase = [:]
+        for(phase in phases)
+        {
+            def toolsModel = ToolsModelOfPhaseModel.findAllByPhase(phase)
+            
+            def item = []
+            for(toolModel in toolsModel)
+            {
+                def toolName = ToolModel.findById(toolModel.tool.id).toolModelName
+                item.push(toolName)
+            }
+            itemPhase.put(phase.modelPhaseName,item)
+        }
     	        
-    	[voting:voting,charts:charts,isFacilitator:isFacilitator]
+    	[voting:voting,charts:charts,isFacilitator:isFacilitator,,meeting:meeting,itemPhase:itemPhase,modelProcess:modelProcess,phases:phases,process:process,position:position]
     }
     @MessageMapping("/consensusNextStep")
     protected String consensusNextStep(String toolId, Principal principal) {       
@@ -59,9 +108,9 @@ class ConsensusController {
                 {
                     process.currentPhase = phase.nextPhase
                     process.save(flush:true)
-                    href= "/"+process.currentPhase.currentTool.toolName+"/index/"+process.currentPhase.currentTool.id
+                    
                 }
-            } 
+            }
             def builder = new JsonBuilder()
             builder {
                 location(href)                

@@ -5,7 +5,7 @@ class Phase{
     String phaseName
     static belongsTo = [ process : Process]
     Tool currentTool
-    
+    PhaseModel phaseModel
     static hasMany =[ tools : Tool]
     Date created = new Date()
     Phase nextPhase = null

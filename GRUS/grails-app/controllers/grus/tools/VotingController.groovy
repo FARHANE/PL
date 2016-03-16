@@ -13,6 +13,8 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import grus.ToolsModelOfPhaseModel
+import grus.ToolModel
 import java.security.Principal
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 
@@ -30,7 +32,25 @@ class VotingController {
         else{
             def meeting = ToolController.getMeetingFromPhase(voting.phase)
             def auth = SecurityContextHolder.getContext().getAuthentication()
+            def user = User.findById(auth.getPrincipal().getId())
+            def isParticipant = user in meeting.participants
             def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
+            if(!isFacilitator && !isParticipant){
+                flash.messageTitle ="You can not access to this meeting"
+                flash.message = 'Your name is not in list of participants'
+                flash.messageType= "note-warning"
+                render(view: '/user/userNotification')
+            }
+            if(!isFacilitator && meeting.state == "coming"){
+                flash.messageTitle ="The meeting is not begin yet"
+                flash.message = 'The facilitator of the meeting must start the meeting before you can participate in '
+                flash.messageType= "note-info"
+                render(view: '/user/userNotification')
+            }
+            else{
+                meeting.state = "open"
+                meeting.save(flush : true)
+            }
             def previousTool = voting.previousTool
             def data = previousTool.data
             if(isFacilitator && voting.data.isEmpty()){// create votingdata if that not existe
@@ -41,9 +61,37 @@ class VotingController {
                 voting.save(flush:true)
             }
             def votes = voting.data
+                /*timeline*/
+        def process = meeting.process
+        def currentPhase = process.currentPhase
+        def currentTool = currentPhase.currentTool 
+        def toolsOfCurrentPhase = currentPhase.tools.sort{it.id}
+        
+        def position = 0
+        toolsOfCurrentPhase.eachWithIndex { item, index ->
+            if(item.id == currentTool.id){
+                position = index
+            }
+        }
+        
+        def modelProcess = process.modelProcess
+        def phases= modelProcess.phasesOfModel
+        phases = phases.sort {it.id}
+        def itemPhase = [:]
+        for(phase in phases)
+        {
+            def toolsModel = ToolsModelOfPhaseModel.findAllByPhase(phase)
             
+            def item = []
+            for(toolModel in toolsModel)
+            {
+                def toolName = ToolModel.findById(toolModel.tool.id).toolModelName
+                item.push(toolName)
+            }
+            itemPhase.put(phase.modelPhaseName,item)
+        }
                     
-            [voting:voting,votes:votes,data:data,isFacilitator:isFacilitator]
+            [voting:voting,votes:votes,data:data,isFacilitator:isFacilitator,meeting:meeting,itemPhase:itemPhase,modelProcess:modelProcess,phases:phases,process:process,position:position]
         }
     	
     }

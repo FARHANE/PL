@@ -16,11 +16,9 @@ class ToolController {
      }
 	 
 	 static def setNextTool (id){
-		 println "id = "+id
+		 
 		 def tool = Tool.findById(id)
-		 println tool
 		 def phase = tool.phase
-		 println phase
 		 if(tool.nextTool!=null){
 			 phase.currentTool = tool.nextTool
 			 phase.save(flush:true)

@@ -55,7 +55,18 @@
                                                                         <i class="fa fa-lightbulb-o"></i>
                                                                         
                                                                         <g:textField id="idea" name="idea" class="form-control" placeholder="Your idea" required="true" />
+
                                                                     </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="form-group">
+                                                                        <div class="input-icon right">
+                                                                            <i class="fa fa-comment"></i>
+                                                                            <g:textArea id="comment" name="comment" class="form-control" placeholder="Comment" />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    
                                                                 </div>
                                                                 <div class="form-group">
                                                                     <h4>Anonym</h4>
@@ -105,6 +116,7 @@
                                                                     
                                                                     <th>Username</th>
                                                                     <th>Idea</th>
+                                                                    <th>Comment</th>
                                                                     <th>Created</th>
                                                                 </tr>
                                                                 </thead>
@@ -120,6 +132,13 @@
 
                                                                         </g:else>
                                                                         <td>${idea.field}</td>
+                                                                       
+                                                                        <g:if test = "${idea.comment!= null}">
+                                                                             <td><p class="comment">${idea.comment}</p></td>
+                                                                        </g:if>
+                                                                        <g:else>
+                                                                         <td><p class="comment">No comment</p></td>
+                                                                        </g:else>
                                                                         <td><span class='label label-sm label-success'>${idea.created.format('dd/MM/yyyy HH:mm:ss')}</span></td>
                                                                     </tr>
                                                                     </g:each>
@@ -137,6 +156,100 @@
 
                                     </div>
                                 </div>
+                            </div>
+                           
+                            <div class="col-lg-12">
+                                        <div class="panel panel-red">
+                                            <div class="panel-heading">
+                                                 Topic : " ${meeting.topic} "</div>
+                                            <div class="panel-body pan">
+                                                <div class="row" style="padding:20px;">
+                                                    <div class="col-md-6" >
+                                                        <div>
+                                                            <h2 style="color:#f03800">Description</h2>
+                                                            <p style="text-align:justify">${meeting.description}</p>
+                                                            <g:if test="${meeting.typeOfMeeting == 'public'}">
+                                                                <p><span class="label label-success">Public</span></p>
+                                                            </g:if>
+                                                            <g:else>
+                                                                <p><span class="label label-danger">Private</span></p>
+                                                            </g:else>
+                                                            <p><span class="label label-sm label-info">Start date</span> : ${meeting.startDate.format("dd/MM/yyyy - HH:mm")}</p>
+                                                            <p><span class="label label-sm label-warning">End date </span> &nbsp;: ${meeting.endDate.format("dd/MM/yyyy - HH:mm")}</p>
+                                                            
+                                                            
+                                                        </div>
+                                                    </div>
+                                                    <!--start timeline-->
+                                                    <div class="col-md-6" >
+                                                        <div style="background-color :#eeeeee">
+                                                        <div class="timeline-centered timeline-sm">
+                                                            
+                                                            <article class="timeline-entry">
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.startDate.format("dd/MM/yyyy")}</span><span>${meeting.startDate.format("HH:mm")}</span></time>
+                                                                    <div class="timeline-icon bg-violet"><i class="fa fa-refresh"></i></div>
+                                                                    <div class="timeline-label"><h4 class="timeline-title">Process : ${modelProcess.processModelName}</h4>
+
+                                                                        <p>${modelProcess.processModelDescription}</p></div>
+                                                                </div>
+                                                            </article>
+                                                            <g:each var="phase" in="${phases}" status="i" >
+
+                                                            <article  class=" timeline-entry ${ (i % 2) == 0 ? 'left-aligned' : ''}">
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time">
+                                                                    
+                                                                        <g:if test="${process.currentPhase.phaseModel.id ==phase.id}">
+
+                                                                        <span style="color:#f0ad4e;font-size:1.1em" >Current Phase</span>
+                                                                        
+                                                                        </g:if>
+                                                                    </time>
+                                                                    <div class="timeline-icon bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase.phaseModel.id ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
+                                                                    <div class="timeline-label bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
+                                                                    <p>
+                                                                        <g:each status="pos" var="tool" in="${itemPhase[phase.modelPhaseName]}">
+                                                                   <g:if test = "${process.currentPhase.phaseModel.id ==phase.id && position == pos }">
+                                                                        <div style="color : blue">
+                                                                        <i class="fa fa-forward"></i>
+                                                                        &nbsp;${tool}
+
+                                                                    </div>
+                                                                        </g:if>
+                                                                        <g:else>
+                                                                            <div>
+                                                                                <i class="fa fa-gear"></i>
+                                                                                &nbsp;${tool}
+
+                                                                            </div>
+                                                                        </g:else>
+                                                                            
+
+                                                                            
+                                                                        </g:each>
+                                                                    </p></div>
+                                                                </div>
+                                                            </article>
+                                                        </g:each>
+                                                           <article class="timeline-entry">
+                                                            
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.endDate.format("dd/MM/yyyy")}</span><span>${meeting.endDate.format("HH:mm")}</span></time>
+                                                                    <div  class="timeline-icon"><i class="fa fa-flag"></i></div>
+                                                                </div>
+                                                            </article>
+                                                            
+                                                        </div>
+                                                        </div>
+                                                       
+                                                        
+                                                    </div>
+                                                    <!--end timeline-->
+                                                    
+                                                </div>  
+                                            </div>
+                                        </div>
                             </div>
                         </div>
                     </div>
@@ -175,10 +288,14 @@
                     client.subscribe("/user/queue/addIdea", function(message) {
                         var idea = JSON.parse(JSON.parse(message.body));
                         var ideaData = idea.message;
+                        var ideaComment = "No comment"
+                        if(idea.comment){
+                            ideaComment = idea.comment;
+                        }
                         var created = idea.created;
                         var author = idea.author;
                       
-                        var ideaHtml = "<tr><td>"+author+"</td><td>"+ideaData+"</td><td><span class='label label-sm label-success'>"+created+"</span></td></tr>";
+                        var ideaHtml = "<tr><td>"+author+"</td><td>"+ideaData+"</td><td><p class='comment'>"+ideaComment+"</p></td><td><span class='label label-sm label-success'>"+created+"</span></td><</tr>";
 
                         $("#listIdeas").append(ideaHtml);
                     });
@@ -208,11 +325,13 @@
                 
                 $("#addIdeaBtn").click(function() {
                     var ideaText = $('#idea').val();
+                    var commentText = $('#comment').val();
                     var brainstormingId="${brainstorm.id}";
                     
                     var idea = {
                             "brainstormingId" : brainstormingId,
                             "ideaText" : ideaText,
+                            "commentText" : commentText,
                             "anonym" : anonymat
                         };
                     $.ajax({
@@ -225,6 +344,7 @@
                     }); 
                     
                 });
+               
                 $('#nextStep').click(function(){
 
                     var href = "${brainstorm.id}";
@@ -236,9 +356,22 @@
                     client.send("/app/setAnonym", {}, JSON.stringify("${brainstorm.id}:"+anonymat));
                 });
             });
-        
+        $(document).keypress(function(e) {
+            if(e.which == 13) {
+                $('#addIdeaBtn').click();
+                return false;
+            }
+        });
     </script>
     </content>
+   <style type="text/css">
+   .comment{
+
+    width: 150px;
+    word-wrap: break-word;
+
+   }
    
+   </style>
     </body>
 </html>

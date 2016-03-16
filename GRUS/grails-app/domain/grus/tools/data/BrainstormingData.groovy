@@ -5,9 +5,10 @@ import grus.tools.Brainstorming
 class BrainstormingData extends Data{
 	
 	User author
-	
+	String comment = null
 	static belongsTo = [brainstorming : Brainstorming]
     static constraints = {
     	author nullable : true
+    	comment nullable : true
     }
 }

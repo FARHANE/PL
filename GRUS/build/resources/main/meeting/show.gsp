@@ -162,17 +162,30 @@
                                                                 <div class="timeline-entry-inner">
                                                                     <time datetime="2014-01-10T03:45" class="timeline-time">
                                                                     
-                                                                        <g:if test="${process.currentPhase.id ==phase.id}">
+                                                                        <g:if test="${process.currentPhase.phaseModel.id ==phase.id}">
 
                                                                         <span style="color:#f0ad4e;font-size:1.1em" >Current Phase</span>
                                                                         
                                                                         </g:if>
                                                                     </time>
-                                                                    <div class="timeline-icon bg-${ (process.currentPhase.id ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase.id ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
-                                                                    <div class="timeline-label bg-${ (process.currentPhase.id ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
+                                                                    <div class="timeline-icon bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase.phaseModel.id ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
+                                                                    <div class="timeline-label bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
                                                                     <p>
-                                                                        <g:each var="tool" in="${itemPhase[phase.modelPhaseName]}">
-                                                                            <div><i class="fa fa-gear"></i>&nbsp;${tool}</div>
+                                                                        <g:each status="pos" var="tool" in="${itemPhase[phase.modelPhaseName]}">
+                                                                   <g:if test = "${process.currentPhase.phaseModel.id ==phase.id && position == pos }">
+                                                                        <div style="color : blue">
+                                                                        <i class="fa fa-forward"></i>
+                                                                        &nbsp;${tool}
+
+                                                                    </div>
+                                                                        </g:if>
+                                                                        <g:else>
+                                                                            <div>
+                                                                                <i class="fa fa-gear"></i>
+                                                                                &nbsp;${tool}
+
+                                                                            </div>
+                                                                        </g:else>
                                                                             
 
                                                                             

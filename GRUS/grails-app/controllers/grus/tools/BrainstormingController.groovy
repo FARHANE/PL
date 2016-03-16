@@ -12,6 +12,8 @@ import groovy.json.JsonSlurper
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import java.security.Principal
+import grus.ToolsModelOfPhaseModel
+import grus.ToolModel
 @Secured(['ROLE_ADMIN', 'ROLE_SUPERUSER', 'ROLE_USER'])
 class BrainstormingController {
 	SimpMessagingTemplate brokerMessagingTemplate
@@ -26,9 +28,56 @@ class BrainstormingController {
         def meeting = ToolController.getMeetingFromPhase(brainstorm.phase)
         
         def auth = SecurityContextHolder.getContext().getAuthentication()
+        def user = User.findById(auth.getPrincipal().getId())
+        def isParticipant = user in meeting.participants
         def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
+        if(!isFacilitator && !isParticipant){
+            flash.messageTitle ="You can not access to this meeting"
+            flash.message = 'Your name is not in list of participants'
+            flash.messageType= "note-warning"
+            render(view: '/user/userNotification')
+        }
+        if(!isFacilitator && meeting.state == "coming"){
+            flash.messageTitle ="The meeting is not begin yet"
+            flash.message = 'The facilitator of the meeting must start the meeting before you can participate in '
+            flash.messageType= "note-info"
+            render(view: '/user/userNotification')
+        }
+        else{
+            meeting.state = "open"
+            meeting.save(flush : true)
+        }
+        /*timeline*/
+        def process = meeting.process
+        def currentPhase = process.currentPhase
+        def currentTool = currentPhase.currentTool 
+        def toolsOfCurrentPhase = currentPhase.tools.sort{it.id}
         
-        [brainstorm:brainstorm,ideas:ideas,isFacilitator:isFacilitator]
+        def position = 0
+        toolsOfCurrentPhase.eachWithIndex { item, index ->
+            if(item.id == currentTool.id){
+                position = index
+            }
+        }
+        
+        def modelProcess = process.modelProcess
+        def phases= modelProcess.phasesOfModel
+        phases = phases.sort {it.id}
+        def itemPhase = [:]
+        for(phase in phases)
+        {
+            def toolsModel = ToolsModelOfPhaseModel.findAllByPhase(phase)
+            
+            def item = []
+            for(toolModel in toolsModel)
+            {
+                def toolName = ToolModel.findById(toolModel.tool.id).toolModelName
+                item.push(toolName)
+            }
+            itemPhase.put(phase.modelPhaseName,item)
+        }
+        
+        [brainstorm:brainstorm,ideas:ideas,isFacilitator:isFacilitator,meeting:meeting,itemPhase:itemPhase,modelProcess:modelProcess,phases:phases,process:process,position:position]
     }
     def saveIdea(){
         if(request.method == 'POST'){
@@ -40,7 +89,7 @@ class BrainstormingController {
                 def idea = null
                 if(ideaJson.anonym == "true"){
 
-                    idea = new BrainstormingData(field : ideaJson.ideaText,brainstorming:brainstorm).save(flush : true)
+                    idea = new BrainstormingData(field : ideaJson.ideaText,comment :ideaJson.commentText ,brainstorming:brainstorm).save(flush : true)
                 }
                 else{
                 	def auth = SecurityContextHolder.getContext().getAuthentication()
@@ -67,6 +116,7 @@ class BrainstormingController {
                 if(idea.author){
                       builder {
                         message(idea.field)
+                        comment(idea.comment)
                         created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
                         author(idea.author.username)
 
@@ -75,6 +125,7 @@ class BrainstormingController {
                     else{
                             builder {
                                 message(idea.field)
+                                comment(idea.comment)
                                 created(idea.created.format('dd/MM/yyyy HH:mm:ss'))
                                 author("Anonym")
                             }  

@@ -69,6 +69,99 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-lg-12">
+                                        <div class="panel panel-red">
+                                            <div class="panel-heading">
+                                                 Topic : " ${meeting.topic} "</div>
+                                            <div class="panel-body pan">
+                                                <div class="row" style="padding:20px;">
+                                                    <div class="col-md-6" >
+                                                        <div>
+                                                            <h2 style="color:#f03800">Description</h2>
+                                                            <p style="text-align:justify">${meeting.description}</p>
+                                                            <g:if test="${meeting.typeOfMeeting == 'public'}">
+                                                                <p><span class="label label-success">Public</span></p>
+                                                            </g:if>
+                                                            <g:else>
+                                                                <p><span class="label label-danger">Private</span></p>
+                                                            </g:else>
+                                                            <p><span class="label label-sm label-info">Start date</span> : ${meeting.startDate.format("dd/MM/yyyy - HH:mm")}</p>
+                                                            <p><span class="label label-sm label-warning">End date </span> &nbsp;: ${meeting.endDate.format("dd/MM/yyyy - HH:mm")}</p>
+                                                            
+                                                            
+                                                        </div>
+                                                    </div>
+                                                    <!--start timeline-->
+                                                    <div class="col-md-6" >
+                                                        <div style="background-color :#eeeeee">
+                                                        <div class="timeline-centered timeline-sm">
+                                                            
+                                                            <article class="timeline-entry">
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.startDate.format("dd/MM/yyyy")}</span><span>${meeting.startDate.format("HH:mm")}</span></time>
+                                                                    <div class="timeline-icon bg-violet"><i class="fa fa-refresh"></i></div>
+                                                                    <div class="timeline-label"><h4 class="timeline-title">Process : ${modelProcess.processModelName}</h4>
+
+                                                                        <p>${modelProcess.processModelDescription}</p></div>
+                                                                </div>
+                                                            </article>
+                                                            <g:each var="phase" in="${phases}" status="i" >
+
+                                                            <article  class=" timeline-entry ${ (i % 2) == 0 ? 'left-aligned' : ''}">
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time">
+                                                                    
+                                                                        <g:if test="${process.currentPhase.phaseModel.id ==phase.id}">
+
+                                                                        <span style="color:#f0ad4e;font-size:1.1em" >Current Phase</span>
+                                                                        
+                                                                        </g:if>
+                                                                    </time>
+                                                                    <div class="timeline-icon bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><i class="fa fa-${ (process.currentPhase.phaseModel.id ==phase.id)? 'gear fa-spin' : 'code-fork'}"></i></div>
+                                                                    <div class="timeline-label bg-${ (process.currentPhase.phaseModel.id ==phase.id)? 'orange' : 'green'}"><h4 class="timeline-title">${phase.modelPhaseName}</h4>
+                                                                    <p>
+                                                                        <g:each status="pos" var="tool" in="${itemPhase[phase.modelPhaseName]}">
+                                                                   <g:if test = "${process.currentPhase.phaseModel.id ==phase.id && position == pos }">
+                                                                        <div style="color : blue">
+                                                                        <i class="fa fa-forward"></i>
+                                                                        &nbsp;${tool}
+
+                                                                    </div>
+                                                                        </g:if>
+                                                                        <g:else>
+                                                                            <div>
+                                                                                <i class="fa fa-gear"></i>
+                                                                                &nbsp;${tool}
+
+                                                                            </div>
+                                                                        </g:else>
+                                                                            
+
+                                                                            
+                                                                        </g:each>
+                                                                    </p></div>
+                                                                </div>
+                                                            </article>
+                                                        </g:each>
+                                                           <article class="timeline-entry">
+                                                            
+                                                                <div class="timeline-entry-inner">
+                                                                    <time datetime="2014-01-10T03:45" class="timeline-time"><span>${meeting.endDate.format("dd/MM/yyyy")}</span><span>${meeting.endDate.format("HH:mm")}</span></time>
+                                                                    <div  class="timeline-icon"><i class="fa fa-flag"></i></div>
+                                                                </div>
+                                                            </article>
+                                                            
+                                                        </div>
+                                                        </div>
+                                                       
+                                                        
+                                                    </div>
+                                                    <!--end timeline-->
+                                                    
+                                                </div>  
+                                            </div>
+                                        </div>
+                            </div>
                         </div>
                     </div>
                 </div>
