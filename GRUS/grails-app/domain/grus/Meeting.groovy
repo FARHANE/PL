@@ -10,10 +10,8 @@ class Meeting {
 	Process process
 	User facilitator
 	static belongsTo = User
-	//static hasOne = [facilitator : User]
 	static hasMany = [participants : User]
 	String anonymat = "true"
-	//UUID createdBy
 	String state = "coming"
 	/* 
 		can take two value : coming, open, closed, finished 
@@ -30,7 +28,7 @@ class Meeting {
 	
     static constraints = {
     	topic maxSize : 100, blank: false, nullable: false
-		description blank: true, nullable: true
+		description blank: true, nullable: true,maxSize : 1024
 		startDate nullable:true
 		endDate nullable:true
 		typeOfMeeting inList : ["private","public"], nullable: false

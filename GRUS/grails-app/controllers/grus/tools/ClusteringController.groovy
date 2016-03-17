@@ -220,6 +220,7 @@ class ClusteringController {
             }
 
             brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/clusteringNextStep",builder.toString())
+            sleep(100)
             for (user in meeting.participants){
                 brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/clusteringNextStep",builder.toString())
             }

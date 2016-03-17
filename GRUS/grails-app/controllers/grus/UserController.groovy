@@ -39,7 +39,7 @@ class UserController {
     	
     	if(params.username &&  params.password && params.passwordConfirmation){
 			if(params.password == params.passwordConfirmation){
-					User user = new User(firstName:params.firstName,lastName:params.lastName,username:params.username, email:params.email, password:params.password,picture:"/users/default.gif")
+					User user = new User(firstName:params.firstName,lastName:params.lastName,username:params.username, email:params.emailAddress, password:params.password,picture:"/users/default.gif")
 					user.save(flush: true,failOnError: true)
 
 					def authority = Role.findByAuthority("ROLE_SUPERUSER")

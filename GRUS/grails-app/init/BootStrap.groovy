@@ -2,6 +2,10 @@ import grus.User
 import grus.Role
 import grus.UserRole
 import grus.ToolModel
+import grus.ProcessModel
+import grus.PhaseModel
+import grus.ToolsModelOfPhaseModel
+
 class BootStrap {
 
     def init = { servletContext ->
@@ -21,6 +25,33 @@ class BootStrap {
         tool01.save(flush:true)
         tool02.save(flush:true)
         tool03.save(flush:true)
+        def phase01 = new PhaseModel(modelPhaseName : "phase N° :01 (Brainstorming -> Clustering -> Voting)")
+        def phase02 = new PhaseModel(modelPhaseName : "phase N° :02 (Brainstorming -> Voting)")
+        def phase03 = new PhaseModel(modelPhaseName : "phase N° :03 (Brainstorming -> Voting -> Clustering -> Voting)")
+        phase01.save(flush:true)
+        phase02.save(flush:true)
+        phase03.save(flush:true)
+        new ToolsModelOfPhaseModel(phase : phase01,tool : tool01).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase01,tool : tool02).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase01,tool : tool03).save(flush : true)
+
+        new ToolsModelOfPhaseModel(phase : phase02,tool : tool01).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase02,tool : tool03).save(flush : true)
+
+        new ToolsModelOfPhaseModel(phase : phase03,tool : tool01).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase03,tool : tool03).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase03,tool : tool02).save(flush : true)
+        new ToolsModelOfPhaseModel(phase : phase03,tool : tool03).save(flush : true)
+
+        def processModel01 = new ProcessModel(processModelName : "Process N° : 01",processModelDescription: "The process has one phase that contain Brainstorming, Clustering and Voting in this order")
+        processModel01.addToPhasesOfModel(phase01)
+        processModel01.save(flush : true)
+
+        def processModel02 = new ProcessModel(processModelName : "Process N° : 02",processModelDescription: "The process has two phases the first contain (Brainstorming, Voting)  the second contain (Brainstorming, Voting, Clustering, Voting)")
+        processModel02.addToPhasesOfModel(phase02)
+        processModel02.addToPhasesOfModel(phase03)
+        processModel02.save(flush : true)
+
         /****************************************************/
 
         
@@ -32,16 +63,14 @@ class BootStrap {
         def user02 =new User(firstName:"Mannix",lastName:"Lara",emailAddress:"neque@non.com",username:"user02",password:"user",gender:"M",job:"Student",company:"ENSEEIHT",picture:"users/default.gif").save(flash:true)
         def user03 =new User(firstName:"Marshall",lastName:"Summer",emailAddress:"lacus@molestie.ca",username:"user03",password:"user",gender:"M",job:"Student",company:"ENSEEIHT",picture:"users/default.gif").save(flash:true)
         
-
-
-        UserRole.create(grus,roleAdmin,true)
-        UserRole.create(admin,roleAdmin,true)
-
+        UserRole.create(grus,roleFacilitator,true)
+        UserRole.create(admin,roleFacilitator,true)
     	UserRole.create(facilitator,roleFacilitator,true)
+        UserRole.create(user01,roleFacilitator,true)
+        UserRole.create(user02,roleFacilitator,true)
+    	UserRole.create(user03,roleFacilitator,true)
 
-        UserRole.create(user01,roleUser,true)
-        UserRole.create(user02,roleUser,true)
-    	UserRole.create(user03,roleUser,true)
+
     
 
     }

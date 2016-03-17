@@ -91,7 +91,9 @@
                                             <g:each in="${meetings}" var="meeting">
                                                 <tr class="tbl-item"><!--<img/>-->
                                                     <td class="img">
-                                                        <img style="width:100px;" src="${assetPath(src: meeting.facilitator.picture)}" alt="" />
+                                                       
+                                                        <img class="col-md-12"src="${resource(dir:'/images/users',file:meeting.facilitator.picture)}" alt="" class="img-responsive"/>
+
                                                         <p class="facilitator">${meeting.facilitator.username}</p>
                                                     </td>
                                                     <!--<data></data>-->
@@ -106,11 +108,13 @@
                                                         <g:if test="${meeting.typeOfMeeting == 'public'}">
                                                             <span class="label label-success">Public</span>
                                                             <span style="float:right"><a href="${createLink(controller:'meeting', action:'show',id:meeting.id)}" class="btn btn-blue">Show</a></span>
+                                                            <span style="float:right"><a href="${createLink(controller:'meeting', action:'report',id:meeting.id)}" class="btn btn-blue">Report</a></span>
                                                             <p class="like hide">0 Participants</p>
                                                         </g:if>
                                                         <g:else>
                                                             <span class="label label-danger">Private</span>
                                                             <span style="float:right"><a href="${createLink(controller:'meeting', action:'show',id:meeting.id)}" class="btn btn-blue">Show</a></span>
+                                                             <span style="float:right"><a href="${createLink(controller:'meeting', action:'report',id:meeting.id)}" class="btn btn-blue">Report</a></span>
                                                             <g:if test="${meeting.participants == null}">
                                                                 <p class="like">0 Participants</p>
                                                             </g:if>

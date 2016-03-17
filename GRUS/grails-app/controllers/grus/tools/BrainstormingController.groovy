@@ -201,6 +201,7 @@ class BrainstormingController {
             }
 
             brokerMessagingTemplate.convertAndSendToUser(meeting.facilitator.username,"/queue/brainstormingNextStep",builder.toString())
+            sleep(1000)
             for (user in meeting.participants){
                 brokerMessagingTemplate.convertAndSendToUser(user.username,"/queue/brainstormingNextStep",builder.toString())
             }

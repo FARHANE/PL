@@ -204,7 +204,13 @@
                                                             
                                                         </div>
                                                         </div>
-                                                        <a href="${createLink(controller:meeting.process.currentPhase.currentTool.toolName, action:'index',id:meeting.process.currentPhase.currentTool.id)}" class="btn btn-success" style="width:100%;font-size:2em;">Go !</a>
+                                                        <g:if test="${meeting.typeOfMeeting == 'private' || user in participants || isFacilitator}">
+                                                             <a href="/${meeting.process.currentPhase.currentTool.toolName}/index/${meeting.process.currentPhase.currentTool.id}" class="btn btn-success" style="width:100%;font-size:2em;">Go !</a>
+                                                         </g:if>                                                      
+                                                         <g:else>                                              <div>           
+                                                              <button type="button" id="subscribeBtn" class="btn btn-success" style="width:100%;font-size:2em;">Subscribe !</button> </div>
+                                                              <a href="/${meeting.process.currentPhase.currentTool.toolName}/index/${meeting.process.currentPhase.currentTool.id}" id="go" class="btn btn-success" style="width:100%;font-size:2em;">Go !</a>
+                                                         </g:else>  
                                                         
                                                         
                                                     </div>
@@ -240,8 +246,31 @@
     <script type="text/javascript" src="${createLinkTo(dir:'javascripts',file:'jquery.flot.spline.js')}"></script>
     <script type="text/javascript" src="${createLinkTo(dir:'javascripts',file:'zabuto_calendar.min.js')}"></script>
     <script type="text/javascript" src="${createLinkTo(dir:'javascripts',file:'index.js')}"></script>
-    <
+    <script type="text/javascript">
+     $(document).ready(function(){
+     $('#go').hide();
+    
+      $('#subscribeBtn').click(function(){
+        $('#subscribeBtn').hide();
+        $('#go').show();
+        this.style.display = 'none'
+                         
+                 var meetingId="${meeting.id}";                    
+                    var meet = {
+                            "meetingId" : meetingId,                            
+                        };
+                    $.ajax({
+                        type: "POST",
+                        url: "/Meeting/addUser",
+                        data: { meeting: JSON.stringify(meet)} ,
+                        success : function(data){                       
+                        }                     
+                    }); 
+         }); 
+     });    
+    
+    </script>   
     </content>
-   
+    
     </body>
 </html>

@@ -122,6 +122,8 @@ class MeetingController {
     def show(){
         def user = User.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
         def meeting = Meeting.findById(params.id)
+        def auth = SecurityContextHolder.getContext().getAuthentication()
+        def isFacilitator = ToolController.isFacilitatorOfMeeting(meeting,(int)auth.getPrincipal().getId())
         def nbOfMeetings = meeting.facilitator.meetingsFacilitated.size()
         def process = meeting.process
         def modelProcess = process.modelProcess
@@ -153,7 +155,7 @@ class MeetingController {
         }
         
         
-        [meeting:meeting,itemPhase:itemPhase,facilitator:meeting.facilitator,position:position,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process, user:user]
+        [isFacilitator:isFacilitator,meeting:meeting,itemPhase:itemPhase,facilitator:meeting.facilitator,position:position,nbOfMeetings:nbOfMeetings,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process, user:user]
     }
     
     def addUser(){
@@ -169,5 +171,14 @@ class MeetingController {
     }
     def theEndMessage(){
         
+    }
+    def report(){
+        def meeting = Meeting.findById(params.id)
+        def process = meeting.process
+        def modelProcess = process.modelProcess
+        def phases= process.phases
+
+        
+        [meeting:meeting,facilitator:meeting.facilitator,participants:meeting.participants,modelProcess:modelProcess,phases:phases,process:process]
     }
 }
